@@ -29,8 +29,9 @@ library
                    , http-types         == 0.6.9.*
                    , mtl                == 2.*
   exposed-modules:   Web.Hatena
-  other-modules:     Web.Hatena.Auth
                      Web.Hatena.Auth.OAuth
+                     Web.Hatena.Auth.Star
+  other-modules:     Web.Hatena.Auth
                      Web.Hatena.Auth.WSSE
                      Web.Hatena.Monad
   ghc-options:       -Wall
