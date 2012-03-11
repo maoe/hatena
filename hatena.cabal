@@ -1,0 +1,52 @@
+name:                hatena
+version:             0.0.0
+synopsis:            A Haskell interface to Hatena API
+homepage:            https://github.com/maoe/hatena
+license:             BSD3
+license-file:        LICENSE
+author:              Mitsutoshi Aoe
+maintainer:          Mitsutoshi Aoe <maoe@foldr.in>
+category:            Web
+build-type:          Simple
+extra-source-files:  README.md
+
+cabal-version:       >= 1.8
+
+flag devel
+  default:           False
+
+library
+  hs-source-dirs:    src
+  build-depends:     aeson              == 0.6.0.*
+                   , authenticate-oauth == 1.0.*
+                   , attoparsec-conduit == 0.2.*
+                   , base               == 4.*
+                   , bytestring         == 0.9.*
+                   , conduit            == 0.2.*
+                   , failure            == 0.2.*
+                   , text               == 0.11.1.*
+                   , http-conduit       == 1.2.6.*
+                   , http-types         == 0.6.9.*
+                   , mtl                == 2.*
+  exposed-modules:   Web.Hatena
+  other-modules:     Web.Hatena.Auth
+                     Web.Hatena.Auth.OAuth
+                     Web.Hatena.Auth.WSSE
+                     Web.Hatena.Monad
+  ghc-options:       -Wall
+
+  if flag(devel)
+    ghc-options:     -O0
+  else
+    ghc-options:     -O2
+
+test-suite test
+  type:              exitcode-stdio-1.0
+  main-is:           Test.hs
+  hs-source-dirs:    tests
+  build-depends:     hatena
+                   , authenticate-oauth == 1.0.*
+                   , base               >= 4 && < 5
+                   , http-conduit       == 1.2.6.*
+                   , mtl                == 2.*
+
