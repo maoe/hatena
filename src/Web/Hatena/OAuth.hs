@@ -4,10 +4,7 @@ module Web.Hatena.OAuth
   ( getUserInfo
   , startApplication
   ) where
-import Control.Applicative ((<*>))
 import Control.Monad.Trans (lift)
-import Data.List (stripPrefix)
-import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
 import Control.Failure (Failure)
@@ -23,12 +20,12 @@ import Web.Hatena.Auth
 import Web.Hatena.Monad
 
 data UserInfo = UserInfo
-  { userInfoUrlName         :: Ascii
-  , userInfoDisplayName     :: Text
-  , userInfoProfileImageUri :: Ascii
+  { url_name          :: Ascii
+  , display_name      :: Text
+  , profile_image_url :: Ascii
   } deriving Show
 
-$(A.deriveJSON (fromMaybe <*> stripPrefix "userInfo") ''UserInfo)
+$(A.deriveJSON id ''UserInfo)
 
 getUserInfo :: (OAuthReadPublic scope, ResourceIO m, Failure HttpException m)
             => HatenaT (OAuth scope) m UserInfo
@@ -43,7 +40,9 @@ getUserInfo = do
     A.Success userInfo -> return userInfo
     A.Error reason     -> fail reason
 
-newtype StartApplication = StartApplication Int
+newtype StartApplication = StartApplication
+  { result :: Int
+  } deriving Show
 
 $(A.deriveJSON id ''StartApplication)
 
