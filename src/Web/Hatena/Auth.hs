@@ -12,6 +12,7 @@ import Web.Authenticate.OAuth (signOAuth)
 
 import Web.Hatena.Auth.OAuth
 import Web.Hatena.Auth.WSSE
+import Web.Hatena.Auth.NoAuth
 import Web.Hatena.Monad
 
 class HatenaAuth auth where
@@ -26,3 +27,6 @@ instance HatenaAuth (OAuth scope) where
 
 instance HatenaAuth WSSE where
   authenticate = undefined
+
+instance HatenaAuth NoAuth where
+  authenticate = return
