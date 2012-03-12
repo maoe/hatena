@@ -29,10 +29,10 @@ runHatenaT :: auth -> HatenaT auth m a -> Manager -> ResourceT m a
 runHatenaT auth act manager =
   runReaderT (runHatena act) $ newHatenaEnv auth manager
 
-getAuth :: Monad m => Hatena auth m auth
+getAuth :: Monad m => HatenaT auth m auth
 getAuth = asks hatenaAuth
 
-getManager :: Monad m => Hatena auth m Manager
+getManager :: Monad m => HatenaT auth m Manager
 getManager = asks hatenaManager
 
 data HatenaEnv auth = HatenaEnv
