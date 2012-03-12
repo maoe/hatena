@@ -30,9 +30,10 @@ library
                    , mtl                == 2.*
   exposed-modules:   Web.Hatena
                      Web.Hatena.Auth.OAuth
-                     Web.Hatena.Auth.Star
+                     Web.Hatena.Star
   other-modules:     Web.Hatena.Auth
                      Web.Hatena.Auth.WSSE
+                     Web.Hatena.Internal
                      Web.Hatena.Monad
   ghc-options:       -Wall
 
@@ -50,4 +51,5 @@ test-suite test
                    , base               >= 4 && < 5
                    , http-conduit       == 1.2.6.*
                    , mtl                == 2.*
+  ghc-options:       -Wall
 

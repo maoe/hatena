@@ -1,16 +1,14 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Web.Hatena.Star where
-import Control.Applicative ((<*>))
+module Web.Hatena.Star
+  ( StarCount(..), getStarCount
+  ) where
 import Control.Monad.Trans (lift)
-import Data.List (stripPrefix)
-import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.ByteString.Char8 as BS (unpack)
 
 import Control.Failure (Failure)
 import Control.Monad.Trans.Resource (ResourceIO)
-import Data.Conduit (($$))
 import Network.HTTP.Conduit
 import Network.HTTP.Types (Ascii)
 import qualified Data.Aeson as A
@@ -34,5 +32,5 @@ getStarCount uri = do
   req <- lift $ parseUrl $ "http://s.hatena.ne.jp/blog.json/" ++ BS.unpack uri
   json <- jsonResponse req
   case A.fromJSON json of
-    A.Success starCount -> return starCount
-    A.Error reason      -> fail reason
+    A.Success count -> return count
+    A.Error reason  -> fail reason

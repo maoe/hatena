@@ -2,11 +2,9 @@ module Web.Hatena.Internal
   ( jsonResponse
   , camelToSnake
   ) where
-import Control.Applicative ((<*>))
 import Control.Monad.Trans (lift)
 import Data.Char
 import Data.List (stripPrefix)
-import Data.Maybe (fromMaybe)
 
 import Data.Conduit (ResourceIO, ($$))
 import Data.Conduit.Attoparsec (sinkParser)
@@ -30,6 +28,6 @@ camelToSnake prefix xs =
     Nothing     -> camelToSnake "" xs
   where
     toSnake = foldr f ""
-    f x xs
-      | isUpper x = '_':toLower x:xs
-      | otherwise = x:xs
+    f y ys
+      | isUpper y = '_':toLower y:ys
+      | otherwise = y:ys
