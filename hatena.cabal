@@ -18,7 +18,7 @@ flag devel
 library
   hs-source-dirs:    src
   build-depends:     aeson              == 0.6.0.*
-                   , authenticate-oauth == 1.0.*
+                   , authenticate-oauth == 1.*
                    , attoparsec-conduit == 0.2.*
                    , base               == 4.*
                    , bytestring         == 0.9.*
@@ -30,12 +30,13 @@ library
                    , mtl                == 2.*
   exposed-modules:   Web.Hatena
                      Web.Hatena.Star
-  other-modules:     Web.Hatena.Auth
-                     Web.Hatena.Auth.NoAuth
+                     Web.Hatena.Monad
+                     Web.Hatena.Auth
+                     Web.Hatena.OAuth
+  other-modules:     Web.Hatena.Auth.NoAuth
                      Web.Hatena.Auth.OAuth
                      Web.Hatena.Auth.WSSE
                      Web.Hatena.Internal
-                     Web.Hatena.Monad
   ghc-options:       -Wall
 
   if flag(devel)
@@ -48,9 +49,12 @@ test-suite test
   main-is:           Test.hs
   hs-source-dirs:    tests
   build-depends:     hatena
-                   , authenticate-oauth == 1.0.*
+                   , authenticate-oauth == 1.*
                    , base               >= 4 && < 5
                    , http-conduit       == 1.2.6.*
                    , mtl                == 2.*
   ghc-options:       -Wall
 
+source-repository head
+  type:              git
+  location:          https://github.com/maoe/hatena.git

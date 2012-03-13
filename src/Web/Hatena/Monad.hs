@@ -1,7 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Web.Hatena.Monad
   ( HatenaT
-  , newHatenaEnv
   , runHatenaT
   , getAuth, getManager
   ) where
