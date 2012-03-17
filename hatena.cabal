@@ -30,11 +30,11 @@ library
                    , mtl                == 2.*
                    , xml-conduit        == 0.5.*
   exposed-modules:   Web.Hatena
-                     Web.Hatena.Star
-                     Web.Hatena.Monad
                      Web.Hatena.Auth
                      Web.Hatena.Bookmark
+                     Web.Hatena.Monad
                      Web.Hatena.OAuth
+                     Web.Hatena.Star
   other-modules:     Web.Hatena.Auth.NoAuth
                      Web.Hatena.Auth.OAuth
                      Web.Hatena.Auth.WSSE
