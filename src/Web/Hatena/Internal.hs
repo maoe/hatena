@@ -4,13 +4,13 @@ module Web.Hatena.Internal
   , camelToSnake
   ) where
 import Control.Monad.Trans (lift)
-import Data.Char
+import Data.Char (toLower, isUpper)
 import Data.List (stripPrefix)
 
+import Data.Aeson (Value, json)
 import Data.Conduit (ResourceIO, ($$))
 import Data.Conduit.Attoparsec (sinkParser)
 import Network.HTTP.Conduit (Request, http, responseBody)
-import Data.Aeson (Value, json)
 import Text.XML (Document, sinkDoc, def)
 
 import Web.Hatena.Monad (HatenaT, getManager)

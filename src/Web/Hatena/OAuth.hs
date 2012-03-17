@@ -9,8 +9,8 @@ import Data.Text (Text)
 
 import Control.Failure (Failure)
 import Control.Monad.Trans.Resource (ResourceIO)
-import Network.HTTP.Conduit
-import Network.HTTP.Types
+import Network.HTTP.Conduit (HttpException, parseUrl)
+import Network.HTTP.Types (Ascii)
 import qualified Data.Aeson as A
 import qualified Data.Aeson.TH as A (deriveJSON)
 
