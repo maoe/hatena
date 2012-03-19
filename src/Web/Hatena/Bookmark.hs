@@ -4,13 +4,14 @@
 module Web.Hatena.Bookmark
   ( getPostEndPoint
   , PostEndPoint(..)
-  , getFeedEndPoint
-  , FeedEndPoint(..)
   , postBookmark
   , getBookmark
   , editBookmark
   , deleteBookmark
   , EditEndPoint(..)
+  , getFeedEndPoint
+  , FeedEndPoint(..)
+  , getFeed
   ) where
 import Control.Applicative ((<$>))
 import Control.Monad.Trans (lift)
@@ -46,25 +47,6 @@ instance FromAtom PostEndPoint where
   fromAtom doc = PostEndPoint <$> listToMaybe href
     where
       href = fromDocument doc $// "rel" `attributeIs` "service.post"
-                              >=> attribute "href"
-
-getFeedEndPoint :: (ResourceIO m, Failure HttpException m)
-                => HatenaT (Either (OAuth scope) WSSE) m FeedEndPoint
-getFeedEndPoint = do
-  req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
-  req' <- authenticate req
-  atom <- atomResponse req'
-  case fromAtom atom of
-    Just endPoint -> return endPoint
-    Nothing       -> fail "failed"
-
-newtype FeedEndPoint = FeedEndPoint { feedEndPoint :: Text }
-  deriving Show
-
-instance FromAtom FeedEndPoint where
-  fromAtom doc = FeedEndPoint <$> listToMaybe href
-    where
-      href = fromDocument doc $// "rel" `attributeIs` "service.feed"
                               >=> attribute "href"
 
 postBookmark
@@ -126,3 +108,31 @@ deleteBookmark (EditEndPoint url) = do
   req <- deleteAtom (T.unpack url) []
   req' <- authenticate req
   emptyResponse req'
+
+getFeedEndPoint :: (ResourceIO m, Failure HttpException m)
+                => HatenaT (Either (OAuth scope) WSSE) m FeedEndPoint
+getFeedEndPoint = do
+  req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
+  req' <- authenticate req
+  atom <- atomResponse req'
+  case fromAtom atom of
+    Just endPoint -> return endPoint
+    Nothing       -> fail "failed"
+
+newtype FeedEndPoint = FeedEndPoint { feedEndPoint :: Text }
+  deriving Show
+
+instance FromAtom FeedEndPoint where
+  fromAtom doc = FeedEndPoint <$> listToMaybe href
+    where
+      href = fromDocument doc $// "rel" `attributeIs` "service.feed"
+                              >=> attribute "href"
+
+getFeed :: (ResourceIO m, Failure HttpException m)
+        => HatenaT (Either (OAuth scope) WSSE) m Document
+getFeed = do
+  FeedEndPoint url <- getFeedEndPoint
+  req <- lift $ parseUrl $ T.unpack url
+  req' <- authenticate req
+  atomResponse req'
+
