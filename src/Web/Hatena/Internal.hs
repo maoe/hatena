@@ -4,19 +4,19 @@ module Web.Hatena.Internal
   ( postAtom
   , jsonResponse
   , atomResponse
+  , FromAtom(..)
   , camelToSnake
   ) where
-import Control.Monad.Trans (lift, liftIO)
+import Control.Monad.Trans (lift)
 import Data.Char (toLower, isUpper)
 import Data.List (stripPrefix)
-import qualified Data.Text.Lazy.IO as T
 
 import Control.Failure (Failure)
 import Data.Aeson (Value, json)
 import Data.Conduit (ResourceIO, ($$))
 import Data.Conduit.Attoparsec (sinkParser)
 import Network.HTTP.Conduit -- (Request, http, responseBody)
-import Text.XML (Document(..), Prologue(..), Element(..), Node, sinkDoc, renderLBS, renderText)
+import Text.XML (Document(..), Prologue(..), Element(..), Node, sinkDoc, renderLBS)
 
 import Web.Hatena.Monad (HatenaT, getManager)
 
@@ -45,6 +45,9 @@ atomResponse req = do
   lift $ do
     resp <- http req manager
     responseBody resp $$ sinkDoc def
+
+class FromAtom a where
+  fromAtom :: Document -> Maybe a
 
 camelToSnake :: String -> String -> String
 camelToSnake prefix xs =

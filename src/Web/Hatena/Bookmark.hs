@@ -2,9 +2,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 module Web.Hatena.Bookmark
-  ( getRootAtomEndPoints
-  , AtomEndPoint(..)
+  ( getPostEndPoint
+  , PostEndPoint(..)
+  , getFeedEndPoint
+  , FeedEndPoint(..)
   , postBookmark
+  , EditEndPoint(..)
   ) where
 import Control.Applicative ((<$>))
 import Control.Monad.Trans (lift)
@@ -16,58 +19,75 @@ import Control.Failure (Failure)
 import Control.Monad.Trans.Resource (ResourceIO)
 import Network.HTTP.Conduit (HttpException, parseUrl)
 import Text.Hamlet.XML (xml)
-import Text.XML (Document)
 import Text.XML.Cursor (($//), (>=>), fromDocument, attributeIs, attribute)
 
 import Web.Hatena.Auth
 import Web.Hatena.Monad
-import Web.Hatena.Internal (postAtom, atomResponse)
+import Web.Hatena.Internal (FromAtom(..), postAtom, atomResponse)
 
-getRootAtomEndPoints
+getPostEndPoint
   :: (ResourceIO m, Failure HttpException m)
-  => HatenaT (Either (OAuth scope) WSSE) m (AtomEndPoint, AtomEndPoint)
-getRootAtomEndPoints = do
+  => HatenaT (Either (OAuth scope) WSSE) m PostEndPoint
+getPostEndPoint = do
   req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
   req' <- authenticate req
   atom <- atomResponse req'
   case fromAtom atom of
-    Just endPoints -> return endPoints
-    Nothing        -> fail "failed"
+    Just endPoint -> return endPoint
+    Nothing       -> fail "failed"
 
-fromAtom :: Document -> Maybe (AtomEndPoint, AtomEndPoint)
-fromAtom atom = listToMaybe $ zip (AtomEndPoint <$> postEndPoints)
-                                  (AtomEndPoint <$> feedEndPoints)
-  where
-    cursor = fromDocument atom
-    postEndPoints = cursor $// "rel" `attributeIs` "service.post"
-                           >=> attribute "href"
-    feedEndPoints = cursor $// "rel" `attributeIs` "service.feed"
-                           >=> attribute "href"
-
-newtype AtomEndPoint = AtomEndPoint { atomEndPoint :: Text }
+newtype PostEndPoint = PostEndPoint { postEndPoint :: Text }
   deriving Show
+
+instance FromAtom PostEndPoint where
+  fromAtom doc = PostEndPoint <$> listToMaybe href
+    where
+      href = fromDocument doc $// "rel" `attributeIs` "service.post"
+                              >=> attribute "href"
+
+getFeedEndPoint
+  :: (ResourceIO m, Failure HttpException m)
+  => HatenaT (Either (OAuth scope) WSSE) m FeedEndPoint
+getFeedEndPoint = do
+  req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
+  req' <- authenticate req
+  atom <- atomResponse req'
+  case fromAtom atom of
+    Just endPoint -> return endPoint
+    Nothing       -> fail "failed"
+
+newtype FeedEndPoint = FeedEndPoint { feedEndPoint :: Text }
+  deriving Show
+
+instance FromAtom FeedEndPoint where
+  fromAtom doc = FeedEndPoint <$> listToMaybe href
+    where
+      href = fromDocument doc $// "rel" `attributeIs` "service.feed"
+                              >=> attribute "href"
 
 postBookmark
   :: (ResourceIO m, Failure HttpException m)
   => Text -- ^ URI
   -> Text -- ^ Comments
-  -> HatenaT (Either (OAuth scope) WSSE) m AtomEndPoint
+  -> HatenaT (Either (OAuth scope) WSSE) m EditEndPoint
 postBookmark uri summary = do
-  (postEndPoint, _) <- getRootAtomEndPoints
-  req <- postAtom (T.unpack (atomEndPoint postEndPoint))
+  post <- getPostEndPoint
+  req <- postAtom (T.unpack (postEndPoint post))
                   [xml|
                     <link rel=related type=text/html href=#{uri}>
                     <summary type=text/plain>#{summary}
                   |]
   req' <- authenticate req
   atom <- atomResponse req'
-  case fromAtom' atom of
+  case fromAtom atom of
     Just endPoint -> return endPoint
     Nothing       -> fail "failed"
 
-fromAtom' :: Document -> Maybe AtomEndPoint
-fromAtom' atom = listToMaybe $ (AtomEndPoint <$> editEndPoint)
-  where
-    cursor = fromDocument atom
-    editEndPoint = cursor $// "rel" `attributeIs` "service.edit"
-                          >=> attribute "href"
+newtype EditEndPoint = EditEndPoint { editEndPoint :: Text }
+  deriving Show
+
+instance FromAtom EditEndPoint where
+  fromAtom doc = EditEndPoint <$> listToMaybe href
+    where
+      href = fromDocument doc $// "rel" `attributeIs` "service.edit"
+                              >=> attribute "href"
