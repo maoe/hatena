@@ -1,12 +1,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Web.Hatena.Internal
-  ( postAtom
-  , jsonResponse
-  , atomResponse
+  ( postAtom, putAtom, deleteAtom
+  , emptyResponse, jsonResponse, atomResponse
   , FromAtom(..)
   , camelToSnake
   ) where
+import Control.Monad (void)
 import Control.Monad.Trans (lift)
 import Data.Char (toLower, isUpper)
 import Data.List (stripPrefix)
@@ -23,14 +23,36 @@ import Web.Hatena.Monad (HatenaT, getManager)
 postAtom :: (ResourceIO m, Failure HttpException m)
          => String -> [Node] -> HatenaT auth m (Request m)
 postAtom uri nodes = do
+  req <- requestAtom uri nodes
+  return $ req { method = "POST" }
+
+putAtom :: (ResourceIO m, Failure HttpException m)
+        => String -> [Node] -> HatenaT auth m (Request m)
+putAtom uri nodes = do
+  req <- requestAtom uri nodes
+  return $ req { method = "PUT" }
+
+deleteAtom :: (ResourceIO m, Failure HttpException m)
+           => String -> [Node] -> HatenaT auth m (Request m)
+deleteAtom uri nodes = do
+  req <- requestAtom uri nodes
+  return $ req { method = "DELETE" }
+
+requestAtom :: (ResourceIO m, Failure HttpException m)
+         => String -> [Node] -> HatenaT auth m (Request m)
+requestAtom uri nodes = do
   req <- lift $ parseUrl uri
   return req
-    { method      = "POST"
-    , requestBody = RequestBodyLBS $ renderLBS def doc
+    { requestBody = RequestBodyLBS $ renderLBS def doc
     }
   where
     doc = Document (Prologue [] Nothing []) root []
     root = Element "entry" [("xmlns", "http://purl.org/atom/ns#")] nodes
+
+emptyResponse :: ResourceIO m => Request m -> HatenaT auth m ()
+emptyResponse req = do
+  manager <- getManager
+  void $ lift $ http req manager
 
 jsonResponse :: ResourceIO m => Request m -> HatenaT auth m Value
 jsonResponse req = do

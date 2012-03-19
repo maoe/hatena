@@ -7,6 +7,9 @@ module Web.Hatena.Bookmark
   , getFeedEndPoint
   , FeedEndPoint(..)
   , postBookmark
+  , getBookmark
+  , editBookmark
+  , deleteBookmark
   , EditEndPoint(..)
   ) where
 import Control.Applicative ((<$>))
@@ -19,15 +22,15 @@ import Control.Failure (Failure)
 import Control.Monad.Trans.Resource (ResourceIO)
 import Network.HTTP.Conduit (HttpException, parseUrl)
 import Text.Hamlet.XML (xml)
+import Text.XML (Document)
 import Text.XML.Cursor (($//), (>=>), fromDocument, attributeIs, attribute)
 
 import Web.Hatena.Auth
 import Web.Hatena.Monad
-import Web.Hatena.Internal (FromAtom(..), postAtom, atomResponse)
+import Web.Hatena.Internal
 
-getPostEndPoint
-  :: (ResourceIO m, Failure HttpException m)
-  => HatenaT (Either (OAuth scope) WSSE) m PostEndPoint
+getPostEndPoint :: (ResourceIO m, Failure HttpException m)
+                => HatenaT (Either (OAuth scope) WSSE) m PostEndPoint
 getPostEndPoint = do
   req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
   req' <- authenticate req
@@ -45,9 +48,8 @@ instance FromAtom PostEndPoint where
       href = fromDocument doc $// "rel" `attributeIs` "service.post"
                               >=> attribute "href"
 
-getFeedEndPoint
-  :: (ResourceIO m, Failure HttpException m)
-  => HatenaT (Either (OAuth scope) WSSE) m FeedEndPoint
+getFeedEndPoint :: (ResourceIO m, Failure HttpException m)
+                => HatenaT (Either (OAuth scope) WSSE) m FeedEndPoint
 getFeedEndPoint = do
   req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
   req' <- authenticate req
@@ -91,3 +93,36 @@ instance FromAtom EditEndPoint where
     where
       href = fromDocument doc $// "rel" `attributeIs` "service.edit"
                               >=> attribute "href"
+
+getBookmark :: (ResourceIO m, Failure HttpException m)
+            => EditEndPoint
+            -> HatenaT (Either (OAuth scope) WSSE) m Document
+getBookmark (EditEndPoint url) = do
+  req <- lift $ parseUrl $ T.unpack url
+  req' <- authenticate req
+  atomResponse req'  
+
+editBookmark :: (ResourceIO m, Failure HttpException m)
+             => EditEndPoint
+             -> Maybe Text -- ^ Title
+             -> Maybe Text -- ^ Comment
+             -> HatenaT (Either (OAuth scope) WSSE) m ()
+editBookmark _                  Nothing Nothing   = fail "failed"
+editBookmark (EditEndPoint url) title'm summary'm = do
+  req <- putAtom (T.unpack url)
+                 [xml|
+                   $maybe title <- title'm
+                     <title>#{title}
+                   $maybe summary <- summary'm
+                     <summary>#{summary}
+                 |]
+  req' <- authenticate req
+  emptyResponse req'
+
+deleteBookmark :: (ResourceIO m, Failure HttpException m)
+               => EditEndPoint
+               -> HatenaT (Either (OAuth scope) WSSE) m ()
+deleteBookmark (EditEndPoint url) = do
+  req <- deleteAtom (T.unpack url) []
+  req' <- authenticate req
+  emptyResponse req'
