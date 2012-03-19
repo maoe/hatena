@@ -29,6 +29,7 @@ library
                    , http-types         == 0.6.9.*
                    , mtl                == 2.*
                    , xml-conduit        == 0.5.*
+                   , xml-hamlet         == 0.2.*
   exposed-modules:   Web.Hatena
                      Web.Hatena.Auth
                      Web.Hatena.Bookmark
