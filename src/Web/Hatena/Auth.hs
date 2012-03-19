@@ -30,3 +30,10 @@ instance HatenaAuth WSSE where
 
 instance HatenaAuth NoAuth where
   authenticate = return
+
+instance (HatenaAuth a, HatenaAuth b) => HatenaAuth (Either a b) where
+  authenticate req = do
+    auth'e <- getAuth
+    case auth'e of
+      Left  auth -> withAuth (const auth) $ authenticate req
+      Right auth -> withAuth (const auth) $ authenticate req
