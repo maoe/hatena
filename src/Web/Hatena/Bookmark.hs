@@ -21,7 +21,7 @@ import Web.Hatena.Internal (atomResponse)
 
 getRootAtomEndPoints
   :: (ResourceIO m, Failure HttpException m)
-  => HatenaT noauth m (AtomEndPoint, AtomEndPoint)
+  => HatenaT (Either (OAuth scope) WSSE) m (AtomEndPoint, AtomEndPoint)
 getRootAtomEndPoints = do
   req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
   req' <- authenticate req
