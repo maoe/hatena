@@ -39,6 +39,7 @@ library
   other-modules:     Web.Hatena.Auth.NoAuth
                      Web.Hatena.Auth.OAuth
                      Web.Hatena.Auth.WSSE
+                     Web.Hatena.Bookmark.Atom
                      Web.Hatena.Internal
   ghc-options:       -Wall
 
