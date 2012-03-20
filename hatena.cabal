@@ -33,6 +33,7 @@ library
   exposed-modules:   Web.Hatena
                      Web.Hatena.Auth
                      Web.Hatena.Bookmark
+                     Web.Hatena.Bookmark.Atom
                      Web.Hatena.Bookmark.Entry
                      Web.Hatena.Monad
                      Web.Hatena.OAuth
@@ -40,7 +41,6 @@ library
   other-modules:     Web.Hatena.Auth.NoAuth
                      Web.Hatena.Auth.OAuth
                      Web.Hatena.Auth.WSSE
-                     Web.Hatena.Bookmark.Atom
                      Web.Hatena.Internal
   ghc-options:       -Wall
 
