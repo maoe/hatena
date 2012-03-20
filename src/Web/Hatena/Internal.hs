@@ -2,7 +2,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Web.Hatena.Internal
   ( postAtom, putAtom, deleteAtom
-  , emptyResponse, jsonResponse, atomResponse
+  , emptyResponse
+  , jsonResponse, jsonValueResponse
+  , atomResponse
   , FromAtom(..)
   , camelToSnake
   ) where
@@ -15,8 +17,9 @@ import Control.Failure (Failure)
 import Data.Aeson (Value, json)
 import Data.Conduit (ResourceIO, ($$))
 import Data.Conduit.Attoparsec (sinkParser)
-import Network.HTTP.Conduit -- (Request, http, responseBody)
+import Network.HTTP.Conduit
 import Text.XML (Document(..), Prologue(..), Element(..), Node, sinkDoc, renderLBS)
+import qualified Data.Aeson.Parser as JSON (value')
 
 import Web.Hatena.Monad (HatenaT, getManager)
 
@@ -60,6 +63,13 @@ jsonResponse req = do
   lift $ do
     resp <- http req manager
     responseBody resp $$ sinkParser json
+
+jsonValueResponse :: ResourceIO m => Request m -> HatenaT auth m Value
+jsonValueResponse req = do
+  manager <- getManager
+  lift $ do
+    resp <- http req manager
+    responseBody resp $$ sinkParser JSON.value'
 
 atomResponse :: ResourceIO m => Request m -> HatenaT auth m Document
 atomResponse req = do

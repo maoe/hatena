@@ -33,6 +33,7 @@ library
   exposed-modules:   Web.Hatena
                      Web.Hatena.Auth
                      Web.Hatena.Bookmark
+                     Web.Hatena.Bookmark.Entry
                      Web.Hatena.Monad
                      Web.Hatena.OAuth
                      Web.Hatena.Star
