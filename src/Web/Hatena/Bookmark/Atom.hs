@@ -30,7 +30,7 @@ import Web.Hatena.Auth
 import Web.Hatena.Monad
 import Web.Hatena.Internal
 
-getPostEndPoint :: (ResourceIO m, Failure HttpException m)
+getPostEndPoint :: (OAuthRead scope, ResourceIO m, Failure HttpException m)
                 => HatenaT (Either (OAuth scope) WSSE) m PostEndPoint
 getPostEndPoint = do
   req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
@@ -50,7 +50,7 @@ instance FromAtom PostEndPoint where
                               >=> attribute "href"
 
 postBookmark
-  :: (ResourceIO m, Failure HttpException m)
+  :: (OAuthWrite scope, ResourceIO m, Failure HttpException m)
   => Text -- ^ URI
   -> Text -- ^ Comments
   -> HatenaT (Either (OAuth scope) WSSE) m EditEndPoint
@@ -76,7 +76,7 @@ instance FromAtom EditEndPoint where
       href = fromDocument doc $// "rel" `attributeIs` "service.edit"
                               >=> attribute "href"
 
-getBookmark :: (ResourceIO m, Failure HttpException m)
+getBookmark :: (OAuthRead scope, ResourceIO m, Failure HttpException m)
             => EditEndPoint
             -> HatenaT (Either (OAuth scope) WSSE) m Document
 getBookmark (EditEndPoint url) = do
@@ -84,7 +84,7 @@ getBookmark (EditEndPoint url) = do
   req' <- authenticate req
   atomResponse req'  
 
-editBookmark :: (ResourceIO m, Failure HttpException m)
+editBookmark :: (OAuthWrite scope, ResourceIO m, Failure HttpException m)
              => EditEndPoint
              -> Maybe Text -- ^ Title
              -> Maybe Text -- ^ Comment
@@ -101,7 +101,7 @@ editBookmark (EditEndPoint url) title'm summary'm = do
   req' <- authenticate req
   emptyResponse req'
 
-deleteBookmark :: (ResourceIO m, Failure HttpException m)
+deleteBookmark :: (OAuthWrite scope, ResourceIO m, Failure HttpException m)
                => EditEndPoint
                -> HatenaT (Either (OAuth scope) WSSE) m ()
 deleteBookmark (EditEndPoint url) = do
@@ -109,7 +109,7 @@ deleteBookmark (EditEndPoint url) = do
   req' <- authenticate req
   emptyResponse req'
 
-getFeedEndPoint :: (ResourceIO m, Failure HttpException m)
+getFeedEndPoint :: (OAuthRead scope, ResourceIO m, Failure HttpException m)
                 => HatenaT (Either (OAuth scope) WSSE) m FeedEndPoint
 getFeedEndPoint = do
   req <- lift $ parseUrl "http://b.hatena.ne.jp/atom"
@@ -128,7 +128,7 @@ instance FromAtom FeedEndPoint where
       href = fromDocument doc $// "rel" `attributeIs` "service.feed"
                               >=> attribute "href"
 
-getFeed :: (ResourceIO m, Failure HttpException m)
+getFeed :: (OAuthRead scope, ResourceIO m, Failure HttpException m)
         => HatenaT (Either (OAuth scope) WSSE) m Document
 getFeed = do
   FeedEndPoint url <- getFeedEndPoint
