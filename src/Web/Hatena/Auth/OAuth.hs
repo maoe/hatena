@@ -15,19 +15,32 @@ data OAuth scope = OAuth
 newOAuth :: O.OAuth -> O.Credential -> OAuth scope
 newOAuth = OAuth
 
-class OAuthReadPublic scope
-class OAuthReadPublic scope => OAuthWritePublic scope
-class OAuthReadPrivate scope
-class OAuthReadPrivate scope => OAuthWritePrivate scope
+class OAuthRead scope
+class OAuthRead scope => OAuthWrite scope
+class OAuthRead scope => OAuthReadPublic scope
+class (OAuthWrite scope, OAuthReadPublic scope) => OAuthWritePublic scope
+class OAuthRead scope => OAuthReadPrivate scope
+class (OAuthWrite scope, OAuthReadPrivate scope) => OAuthWritePrivate scope
 
 data ReadPublicScope
 data WritePublicScope
 data ReadPrivateScope
 data WritePrivateScope
 
+instance OAuthRead ReadPublicScope
+instance OAuthRead WritePublicScope
+instance OAuthRead ReadPrivateScope
+instance OAuthRead WritePrivateScope
+
+instance OAuthWrite WritePublicScope
+instance OAuthWrite WritePrivateScope
+
 instance OAuthReadPublic ReadPublicScope
 instance OAuthReadPublic WritePublicScope
+
 instance OAuthWritePublic WritePublicScope
+
 instance OAuthReadPrivate ReadPrivateScope
 instance OAuthReadPrivate WritePrivateScope
+
 instance OAuthWritePrivate WritePrivateScope
